@@ -15,5 +15,5 @@ sudo ip link set dev {interface} xdpgeneric off
 
 ### Archlinux
 ```
-pacman -S kernel-headers 
+pacman -S kernel-headers clang llvm
 ```
