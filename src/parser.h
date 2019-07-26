@@ -17,7 +17,7 @@ static __always_inline int parse_ether(struct hdr_cursor *nh,
 	if (etherhdr != NULL)
 		*etherhdr = ptr;
 
-	return 0; // no next header
+	return ptr->ether_type;
 }
 
 static __always_inline int parse_ipv4(struct hdr_cursor *nh,
@@ -34,20 +34,19 @@ static __always_inline int parse_ipv4(struct hdr_cursor *nh,
 	if (iphdr != NULL)
 		*iphdr = ptr;
 
-	return 0; // no next header
+	return ptr->protocol;
 }
 
 static __always_inline int parse_tcphdr(struct hdr_cursor *nh,
                                          void *data_end,
-					 struct tcphdr **tcphdr)
+					 struct tcp_t **tcphdr)
 {
-	struct tcphdr *tcph = nh->pos;
+	struct tcp_t *tcph = nh->pos;
 
 	if (tcph + 1 > data_end)
 		return -1;
 
 	nh->pos = tcph + 1;
-	tcph->dest = bpf_htons(bpf_ntohs(tcph->dest) - 1);
 
 	if (tcphdr != NULL)
 		*tcphdr = tcph;
