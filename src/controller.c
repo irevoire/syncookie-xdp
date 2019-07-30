@@ -1,10 +1,3 @@
-struct connection_t {
-	__u32 src_addr;
-	__u32 dst_addr;
-	__u16 src_port;
-	__u16 dst_port;
-};
-
 // TODO: check if a copy is made when calling this function or if the compiler is able to
 // reuse the structure
 static inline struct connection_t compute_connection(struct ipv4_t *ip, struct tcp_t *tcp) {
@@ -29,10 +22,13 @@ static inline __u32 compute_cookie(struct ipv4_t *ip, struct tcp_t *tcp) {
 		return auth;
 }
 
-inline int controller(struct ipv4_t *ip, struct tcp_t *tcp)
+static inline int controller(struct ipv4_t *ip, struct tcp_t *tcp)
 {
 	struct connection_t connection = compute_connection(ip, tcp);
-	// TODO here we should check if we already got this connection
+	char *res = bpf_map_lookup_elem(&connections_table, &connection);
+	if (res) // this connection already exist
+		return XDP_PASS;
+
 	__u32 cookie = compute_cookie(ip, tcp);
 
 	// you won't steal my cookie!

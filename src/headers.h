@@ -3,6 +3,13 @@
 
 #define NULL ((void *) 0)
 
+struct connection_t {
+	__u32 src_addr;
+	__u32 dst_addr;
+	__u16 src_port;
+	__u16 dst_port;
+};
+
 /* Header cursor to keep track of current parsing position */
 struct hdr_cursor {
         void *pos;

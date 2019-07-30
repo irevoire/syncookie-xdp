@@ -14,6 +14,15 @@
 
 #include "headers.h"
 #include "parser.h"
+
+// tries are the best data structure to store a lot of ip adderess
+struct bpf_map_def SEC("maps") connections_table = {
+	.type        = BPF_MAP_TYPE_LPM_TRIE,
+	.key_size    = sizeof(struct connection_t),
+	.value_size  = sizeof(char),
+	.max_entries = 1000, // fix this number
+};
+
 #include "controller.c" // I have no idea on how the linkage works here so I include the .c
 
 SEC("syncookie")
