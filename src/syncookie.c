@@ -26,7 +26,7 @@ struct bpf_map_def SEC("maps") connections_table = {
 #include "controller.c" // I have no idea on how the linkage works here so I include the .c
 
 SEC("syncookie")
-int syncookie(struct xdp_md *ctx)
+int syncookie_fn(struct xdp_md *ctx)
 {
 	void *data_end = (void *)(long)ctx->data_end;
 	void *data = (void *)(long)ctx->data;
