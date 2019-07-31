@@ -31,25 +31,26 @@ int syncookie_fn(struct xdp_md *ctx)
 	void *data_end = (void *)(long)ctx->data_end;
 	void *data = (void *)(long)ctx->data;
 
-	struct ethernet_t *eth = NULL;
-	struct ipv4_t *ip = NULL;
-	struct tcp_t *tcp = NULL;
+	struct headers_t hdr;
+	hdr.ether = NULL;
+	hdr.ipv4 = NULL;
+	hdr.tcp = NULL;
 
 	struct hdr_cursor nh;
 	int nh_type;
 	nh.pos = data;
 
-	nh_type = parse_ether(&nh, data_end, &eth);
+	nh_type = parse_ether(&nh, data_end, &hdr.ether);
 
 	if (nh_type == ETH_P_IP) {
-		nh_type = parse_ipv4(&nh, data_end, NULL);
+		nh_type = parse_ipv4(&nh, data_end, &hdr.ipv4);
 		if (nh_type == IPPROTO_TCP)
 			goto parse_tcp;
 	}
 	goto out;
 parse_tcp:
-	parse_tcphdr(&nh, data_end, &tcp);
-	controller(ip, tcp);
+	parse_tcphdr(&nh, data_end, &hdr.tcp);
+	controller(&hdr);
 	goto out;
 out:
 	return XDP_PASS;

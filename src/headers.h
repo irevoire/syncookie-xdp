@@ -20,7 +20,7 @@ struct hdr_cursor {
 // All the structures must be packed to ensure there is no padding
 
 struct __attribute__((__packed__)) ethernet_t {
-	unsigned dst_addr : 9;   // 6 bytes
+	unsigned dst_addr : 9;   // 6 bytes TODO absolutely broken
 	unsigned src_addr : 9;   // 6 bytes
 	unsigned ether_type : 16; // 2
 };
@@ -59,6 +59,12 @@ struct __attribute__((__packed__)) tcp_t {
 	unsigned window: 16;
 	unsigned checksum: 16;
 	unsigned urgent_ptr: 16;
+};
+
+struct headers_t {
+	struct ethernet_t *ether;
+	struct ipv4_t *ipv4;
+	struct tcp_t *tcp;
 };
 
 #endif /* _HEADERS_H_ */

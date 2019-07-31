@@ -1,11 +1,11 @@
 // TODO: check if a copy is made when calling this function or if the compiler is able to
 // reuse the structure
-static inline struct connection_t compute_connection(struct ipv4_t *ip, struct tcp_t *tcp) {
+static inline struct connection_t compute_connection(struct headers_t *hdr) {
 	struct connection_t connection = {
-		.src_addr = ip->src_addr,
-		.dst_addr = ip->dst_addr,
-		.src_port = tcp->src_port,
-		.dst_port = tcp->dst_port,
+		.src_addr = hdr->ipv4->src_addr,
+		.dst_addr = hdr->ipv4->dst_addr,
+		.src_port = hdr->tcp->src_port,
+		.dst_port = hdr->tcp->dst_port,
 	};
 	return connection;
 }
@@ -13,38 +13,38 @@ static inline struct connection_t compute_connection(struct ipv4_t *ip, struct t
 static inline void handle_syn() {}
 static inline void handle_ack() {}
 
-static inline __u32 compute_cookie(struct ipv4_t *ip, struct tcp_t *tcp) {
-		__u32 auth = 0;
-		auth = tcp->src_port << 16;
-		auth |= tcp->dst_port;
-		auth ^= ip->src_addr;
-		auth ^= ip->dst_addr;
-		return auth;
+static inline __u32 compute_cookie(struct headers_t *hdr) {
+	__u32 auth = 0;
+	auth = hdr->tcp->src_port << 16;
+	auth |= hdr->tcp->dst_port;
+	auth ^= hdr->ipv4->src_addr;
+	auth ^= hdr->ipv4->dst_addr;
+	return auth;
 }
 
-static inline int controller(struct ipv4_t *ip, struct tcp_t *tcp)
+static inline int controller(struct headers_t *hdr)
 {
-	struct connection_t connection = compute_connection(ip, tcp);
+	struct connection_t connection = compute_connection(hdr);
 	char *res = bpf_map_lookup_elem(&connections_table, &connection);
 	if (res) // this connection already exist
 		return XDP_PASS;
 
-	__u32 cookie = compute_cookie(ip, tcp);
+	__u32 cookie = compute_cookie(hdr);
 
 	// you won't steal my cookie!
 	// if SYN-ACK or any other flags, drop
-	if ((tcp->syn == 1 && tcp->ack == 1) ||
-			tcp->res == 1 || tcp->cwr == 1 ||
-			tcp->ece == 1 || tcp->urg == 1 ||
-			tcp->psh == 1 || tcp->rst == 1 ||
-			tcp->fin == 1)
+	if ((hdr->tcp->syn == 1 && hdr->tcp->ack == 1) ||
+			hdr->tcp->res == 1 || hdr->tcp->cwr == 1 ||
+			hdr->tcp->ece == 1 || hdr->tcp->urg == 1 ||
+			hdr->tcp->psh == 1 || hdr->tcp->rst == 1 ||
+			hdr->tcp->fin == 1)
 		return XDP_DROP;
 	// we should get a syn
-	else if (tcp->syn == 1)
+	else if (hdr->tcp->syn == 1)
 		handle_syn();
 	// or has the communication already started?
-	else if ( (tcp->ack == 1) &&
-			((tcp->ack_no - 1) == cookie))
+	else if ( (hdr->tcp->ack == 1) &&
+			((hdr->tcp->ack_no - 1) == cookie))
 		handle_ack();
 	return XDP_PASS;
 }
