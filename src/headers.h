@@ -20,9 +20,9 @@ struct hdr_cursor {
 // All the structures must be packed to ensure there is no padding
 
 struct __attribute__((__packed__)) ethernet_t {
-	unsigned dst_addr : 9;   // 6 bytes TODO absolutely broken
-	unsigned src_addr : 9;   // 6 bytes
-	unsigned ether_type : 16; // 2
+	__u8 dst_addr[6]; // 6 bytes
+	__u8 src_addr[6]; // 6 bytes
+	__u16 ether_type; // 2 bytes
 };
 
 struct __attribute__((__packed__)) ipv4_t {
