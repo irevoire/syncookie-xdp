@@ -30,22 +30,22 @@ struct __attribute__((__packed__)) ipv4_t {
 	unsigned ihl: 4;
 	unsigned dscp: 6;
 	unsigned ecn: 2;
-	unsigned total_len: 16;
-	unsigned identification: 16;
+	__u16 total_len;
+	__u16 identification;
 	unsigned flags: 3;
 	unsigned frag_offset: 13;
-	unsigned ttl: 8;
-	unsigned protocol: 8;
-	unsigned hdr_checksum: 16;
-	unsigned src_addr: 32;
-	unsigned dst_addr: 32;
+	__u8 ttl;
+	__u8 protocol;
+	__u16 hdr_checksum;
+	__u32 src_addr;
+	__u32 dst_addr;
 };
 
 struct __attribute__((__packed__)) tcp_t {
-	unsigned src_port: 16;
-	unsigned dst_port: 16;
-	unsigned seq_no: 32;
-	unsigned ack_no: 32; // will carry the cookie
+	__u16 src_port;
+	__u16 dst_port;
+	__u32 seq_no;
+	__u32 ack_no; // will carry the cookie
 	unsigned data_offset: 4;
 	unsigned res: 4;
 	unsigned cwr: 1;
@@ -56,9 +56,9 @@ struct __attribute__((__packed__)) tcp_t {
 	unsigned rst: 1;
 	unsigned syn: 1;
 	unsigned fin: 1;
-	unsigned window: 16;
-	unsigned checksum: 16;
-	unsigned urgent_ptr: 16;
+	__u16 window;
+	__u16 checksum;
+	__u16 urgent_ptr;
 };
 
 struct headers_t {
