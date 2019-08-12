@@ -30,6 +30,7 @@ int syncookie_fn(struct xdp_md *ctx)
 {
 	void *data_end = (void *)(long)ctx->data_end;
 	void *data = (void *)(long)ctx->data;
+	int res = XDP_PASS;
 
 	struct headers_t hdr;
 	hdr.ether = NULL;
@@ -50,10 +51,10 @@ int syncookie_fn(struct xdp_md *ctx)
 	goto out;
 parse_tcp:
 	parse_tcphdr(&nh, data_end, &hdr.tcp);
-	controller(&hdr);
+	res = controller(&hdr);
 	goto out;
 out:
-	return XDP_PASS;
+	return res;
 }
 
 
