@@ -43,7 +43,12 @@ static inline int handle_syn(struct headers_t *hdr, __u32 cookie) {
 }
 
 
-static inline int handle_ack(struct headers_t *hdr, __u32 cookie) {
+static inline int handle_ack(struct headers_t *hdr, struct connection_t *connection) {
+	// save the connection
+	// here we don't have any use of the value associated to the key
+	// all we want is to have an entry into the map
+	bpf_map_update_elem(&connections_table, &connection, &insert, BPF_ANY);
+
 	// =========== MAC ============
 	// swap src / dst addr
 	__u8 tmp_addr[6];
@@ -107,7 +112,7 @@ static inline int controller(struct headers_t *hdr)
 	// or has the communication already started?
 	else if ( (hdr->tcp->ack == 1) &&
 			((hdr->tcp->ack_no - 1) == cookie))
-		return handle_ack(hdr, cookie);
+		return handle_ack(hdr, &connection);
 	else // should never happens
 		return XDP_DROP;
 }

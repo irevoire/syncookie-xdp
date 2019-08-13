@@ -23,6 +23,8 @@ struct bpf_map_def SEC("maps") connections_table = {
 	.max_entries = 1000, // fix this number
 };
 
+char insert = 'a';
+
 #include "controller.c" // I have no idea on how the linkage works here so I include the .c
 
 SEC("syncookie")
