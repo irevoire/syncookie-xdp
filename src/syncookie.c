@@ -23,6 +23,9 @@ struct bpf_map_def SEC("maps") connections_table = {
 	.max_entries = 1000, // fix this number
 };
 
+// We don't need to use any value associated to our hashmap. So this is the
+// value we are going to insert in every entries. Also since the
+// `bpf_map_update_elem` expect pointer to raw data we can't mark this as const.
 char insert = 'a';
 
 #include "controller.c" // I have no idea on how the linkage works here so I include the .c

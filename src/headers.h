@@ -3,6 +3,7 @@
 
 #define NULL ((void *) 0)
 
+// This structure will be used to recognize connection.
 struct connection_t {
 	__u32 src_addr;
 	__u32 dst_addr;
@@ -61,6 +62,7 @@ struct __attribute__((__packed__)) tcp_t {
 	__u16 urgent_ptr;
 };
 
+// provide an easy access to all the paquet information
 struct headers_t {
 	struct ethernet_t *ether;
 	struct ipv4_t *ipv4;

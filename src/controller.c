@@ -1,3 +1,4 @@
+// Compute a connection: Store the ip src / dst and the tcp port src / dst
 // TODO: check if a copy is made when calling this function or if the compiler is able to
 // reuse the structure
 static inline struct connection_t compute_connection(struct headers_t *hdr) {
@@ -10,6 +11,8 @@ static inline struct connection_t compute_connection(struct headers_t *hdr) {
 	return connection;
 }
 
+// Should be called upon the reception of a syn paquet.
+// Return the paquet on the same interface as a syn ack paquet.
 static inline int handle_syn(struct headers_t *hdr, __u32 cookie) {
 	// =========== MAC ============
 	// swap src / dst addr
@@ -43,6 +46,9 @@ static inline int handle_syn(struct headers_t *hdr, __u32 cookie) {
 }
 
 
+// Should be called upon the reception of a ack paquet.
+// Save the connection in the bpf table and send back the paquet on the same
+// interface as a ack paquet
 static inline int handle_ack(struct headers_t *hdr, struct connection_t *connection) {
 	// save the connection
 	// here we don't have any use of the value associated to the key
@@ -67,6 +73,7 @@ static inline int handle_ack(struct headers_t *hdr, struct connection_t *connect
 	hdr->tcp->seq_no = hdr->tcp->ack_no;
 	hdr->tcp->ack_no = seq_no + 1;
 
+	// return ack
 	hdr->tcp->ack = 1; // useless
 	hdr->tcp->syn = 0;
 
@@ -80,6 +87,8 @@ static inline int handle_ack(struct headers_t *hdr, struct connection_t *connect
 	return XDP_TX;
 }
 
+// Compute a cookie for the current connection. Currently we don't save
+// any tcp option in the cookie and it is easy to bruteforce
 static inline __u32 compute_cookie(struct headers_t *hdr) {
 	__u32 auth = 0;
 	auth = hdr->tcp->src_port << 16;
@@ -89,6 +98,9 @@ static inline __u32 compute_cookie(struct headers_t *hdr) {
 	return auth;
 }
 
+// This fuction control what should happens when a new packet is received
+// It check if the connection is already validated. And if not it check the
+// tcp flags and call accordingly the `handle_syn` or `handle_ack` function
 static inline int controller(struct headers_t *hdr)
 {
 	struct connection_t connection = compute_connection(hdr);
